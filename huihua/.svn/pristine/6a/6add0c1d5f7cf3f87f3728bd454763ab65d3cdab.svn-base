@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<!-- 核销兑换码接口 -->
+	<!-- author jesse wang -->
+	<!-- since 2015-03-11 -->
+	
+	
+	<package name="hx-package" extends="json-default" namespace="/api/hx">
+	<!-- 定义一个拦截器stack -->
+		<interceptors>
+			<interceptor-stack name="logException">
+				<interceptor-ref name="defaultStack" />
+				<interceptor-ref name="exception">
+					<param name="logEnabled">true</param>
+					<param name="logLevel">info</param>
+				</interceptor-ref>
+			</interceptor-stack>
+		</interceptors>
+		
+		<!-- 修改默认的拦截器stack，原来是defaultStack -->
+		<default-interceptor-ref name="logException" />
+
+		<global-results>
+			<result name="error">/error.html</result>
+		</global-results>
+
+		<global-exception-mappings>
+			<exception-mapping result="error" exception="java.lang.Exception"></exception-mapping>
+		</global-exception-mappings>
+	<!-- 产品列表-->
+	    <action name="hxno" class="com.partner.huihua.action.hx.HXAction" method="hxno">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	    <!-- 产品信息明细 -->
+	    <action name="validatehxno" class="com.partner.huihua.action.hx.HXAction" method="validatehxno">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	
+	    
+	</package>
+	
+</struts>

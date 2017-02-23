@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.partner.huihua.mapper.TransMapper">
+    <!--映射 -->
+	<resultMap id="TransInfoMap" type="com.partner.huihua.bean.TransInfo" >
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="TRANS_NO" property="transNo" jdbcType="VARCHAR" />
+		<result column="ACCOUNT_ID" property="accountId" jdbcType="BIGINT" />
+		<result column="PRODECT_ID" property="productId" jdbcType="BIGINT" />
+		<result column="PNAME" property="pname" jdbcType="VARCHAR" />
+		<result column="PICTURE_URL" property="pictureUrl" jdbcType="VARCHAR" />
+		<result column="MP_URL" property="mpUrl" jdbcType="VARCHAR" />
+		<result column="NUMBER" property="number" jdbcType="INTEGER" />
+		<result column="AMT" property="amt" jdbcType="NUMERIC" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+		<result column="MOBILE" property="mobile" jdbcType="VARCHAR" />
+		<result column="ADDRESS" property="address" jdbcType="VARCHAR" />
+		<result column="PC" property="pc" jdbcType="BIGINT" />
+		<result column="STATUS" property="status" typeHandler="com.partner.huihua.utils.common.IntEnumHandler"/>
+		<result column="TRANS_DESC" property="desc" jdbcType="VARCHAR"/>
+		<result column="VERSION_OPTIMIZED_LOCK" property="versionOptimizedLock" jdbcType="BIGINT" />
+		<result column="CREATED_ON" property="createdOn" jdbcType="TIMESTAMP" />
+		<result column="UPDATED_ON" property="updatedOn" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	
+	<!-- 所有字段 -->
+	<sql id="Base_Column_List" >
+		ID,
+		TRANS_NO,
+		ACCOUNT_ID,
+		PNAME,
+		PRODECT_ID,
+		NUMBER,
+		AMT,
+		NAME,
+		MOBILE,
+		ADDRESS,
+		PC,
+		STATUS,
+		TRANS_DESC,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+	</sql>
+	
+	<!-- 一般查询条件 -->
+	<sql id="generic_where_clause">
+	    <where>
+	    	<![CDATA[ 1=1 ]]>
+	    	<!-- 账号 -->
+		    <if test="transNo != null">
+		        <![CDATA[ AND t.TRANS_NO=#{transNo,jdbcType=VARCHAR} ]]>
+		    </if>
+	    	<!-- 账号 -->
+		    <if test="accountId != null">
+		        <![CDATA[ AND t.ACCOUNT_ID=#{accountId,jdbcType=BIGINT} ]]>
+		    </if>
+		    <!-- 账号 -->
+		    <if test="status != null">
+			    AND t.STATUS=#{status,jdbcType=INTEGER,typeHandler=com.sohu.focus.util.common.IntEnumHandler}
+			</if>
+		</where>
+	</sql>
+	
+	<!-- insert -->
+	<insert id="insert" parameterType="com.partner.huihua.bean.TransInfo">
+		insert into HH_TRANS_INFO (
+		TRANS_NO,
+		ACCOUNT_ID,
+		PRODECT_ID,
+		NUMBER,
+		AMT,
+		NAME,
+		MOBILE,
+		ADDRESS,
+		PC,
+		STATUS,
+		TRANS_DESC,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+		) values
+		(
+		#{transNo,jdbcType=VARCHAR},
+		#{accountId,jdbcType=BIGINT},
+		#{productId,jdbcType=BIGINT},
+		#{number,jdbcType=INTEGER},
+		#{amt,jdbcType=NUMERIC},
+		#{name,jdbcType=VARCHAR},
+		#{mobile,jdbcType=VARCHAR},
+		#{address,jdbcType=VARCHAR},
+		#{pc,jdbcType=BIGINT},
+		#{status,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler},
+		#{desc,jdbcType=VARCHAR},
+		#{versionOptimizedLock,jdbcType=BIGINT},
+		#{createdOn,jdbcType=TIMESTAMP},
+		#{updatedOn,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<!-- 使用乐观锁更新一行数据 -->
+	<update id="updateByVersion" parameterType="com.partner.huihua.bean.TransInfo">
+	    update HH_TRANS_INFO 
+	    <set>
+	        
+	        <if test="status != null">
+	            STATUS=#{status,jdbcType=INTEGER},
+	        </if>
+	        <if test="desc != null">
+	            TRANS_DESC=#{desc,jdbcType=VARCHAR},
+	        </if>
+	        <!-- 乐观锁值加1 -->
+	        <if test="versionOptimizedLock != null">
+	            version_optimized_lock=${versionOptimizedLock + 1},
+	        </if>
+	        <!-- 不用更新created_on -->
+	        <if test="updatedOn != null">
+	            updated_on=#{updatedOn,jdbcType=TIMESTAMP}
+	        </if>
+	    </set>
+		where TRANS_NO=#{transNo,jdbcType=VARCHAR} and VERSION_OPTIMIZED_LOCK=#{versionOptimizedLock,jdbcType=INTEGER}
+	</update>
+	
+	
+	<select id="getTransByPage" resultMap="TransInfoMap">
+	    select p.PNAME,p.PICTURE_URL,p.MP_URL,t.ID,t.STATUS,t.TRANS_NO,t.NUMBER,t.AMT,t.CREATED_ON
+	    from HH_TRANS_INFO t, HH_PRODUCT_INFO p
+	    <include refid="generic_where_clause" />
+	    and t.PRODECT_ID=p.ID
+	    ORDER BY 
+		<!-- 是否传过排序字段 -->
+		<choose>
+		    <when test="pageInfo.sort != null">
+		        ${pageInfo.sort}
+		    </when>
+		    <otherwise>
+		        t.ID
+		    </otherwise>
+		</choose>
+		<!-- 是否传过排序顺序 -->
+		<choose>
+			<when test="pageInfo.order != null">
+			    ${pageInfo.order}
+			</when>
+			<otherwise>
+			    DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="getTransDetail" resultMap="TransInfoMap">
+	    select 
+	    p.PNAME,
+	    T.ID,
+		T.TRANS_NO,
+		T.ACCOUNT_ID,
+		T.PRODECT_ID,
+		T.NUMBER,
+		T.AMT,
+		T.STATUS,
+		T.TRANS_DESC,
+		T.VERSION_OPTIMIZED_LOCK,
+		T.CREATED_ON,
+		T.UPDATED_ON
+	    from HH_TRANS_INFO t, HH_PRODUCT_INFO p
+	    <include refid="generic_where_clause" />
+	    and t.PRODECT_ID=p.ID
+	</select>
+	
+</mapper>

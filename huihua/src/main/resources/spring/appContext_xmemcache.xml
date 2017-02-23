@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+       
+	<!-- 由XMemcachedClientFactoryBean创建客户端 -->
+	<bean id="factoryMemcachedClient" class="net.rubyeye.xmemcached.utils.XMemcachedClientFactoryBean">
+		<property name="servers">
+			<value>10.2.70.155:11211</value>
+		</property>
+		<!-- <property name="servers">
+                  <value>localhost:12000 localhost:12001</value>
+        </property> -->
+        
+        <!-- server's weights --> 
+        <property name="weights"> 
+                <list> 
+                        <value>1</value> 
+                        <!-- <value>2</value>  -->
+                        <!-- <value>3</value>  -->
+                </list> 
+        </property> 
+		<!-- Use binary protocol,default is TextCommandFactory, BinaryCommandFactory KestrelCommandFactory -->
+		<property name="commandFactory">
+			<bean class="net.rubyeye.xmemcached.command.BinaryCommandFactory" />
+		</property>
+		<!-- Distributed strategy  KetamaMemcachedSessionLocator-->
+		<property name="sessionLocator">
+			<bean class="net.rubyeye.xmemcached.impl.KetamaMemcachedSessionLocator" />
+		</property>
+		<!-- Serializing transcoder -->
+		<property name="transcoder">
+			<bean class="net.rubyeye.xmemcached.transcoders.SerializingTranscoder" />
+		</property>
+		<!-- nio connection pool size -->
+		<property name="connectionPoolSize" value="5"></property>
+		<property name="failureMode" value="false" />
+	</bean>
+	<bean id="xmemMng"	class="com.sohu.focus.util.caching.impl.CachingXMemcachedClient" init-method="init" destroy-method="destroy">
+	  <property name="memcachedClient" ref="factoryMemcachedClient" />
+	  <!-- 当为true时重启后所有保存在 memcached的信息都会被清除  -->
+	  <property name="isflushAll" value="false" />
+	  <!--单位为毫秒  -->
+	  <!-- 300000为5分钟 -->
+		<property name="expire" value="300000"></property>
+	</bean>
+</beans>

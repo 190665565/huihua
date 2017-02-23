@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.partner.huihua.mapper.PinMapper">
+    <!--映射 -->
+	<resultMap id="PinMap" type="com.partner.huihua.bean.PinObject" >
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="ACCOUNT_ID" property="accountid" jdbcType="BIGINT" />
+		<result column="TYPE" property="type" jdbcType="INTEGER" typeHandler="com.partner.huihua.utils.common.IntEnumHandler" />
+		<result column="LAST_PIN" property="last_pin" jdbcType="INTEGER" />
+		<result column="COUNT" property="count" jdbcType="INTEGER" />
+		<result column="VERSION_OPTIMIZED_LOCK" property="versionOptimizedLock" jdbcType="INTEGER" />
+		<result column="CREATED_ON" property="createdOn" jdbcType="TIMESTAMP" />
+		<result column="UPDATED_ON" property="updatedOn" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	
+	<!-- 所有字段 -->
+	<sql id="Base_Column_List" >
+		ACCOUNT_ID,
+		TYPE,
+		LAST_PIN,
+		COUNT,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+	</sql>
+	<!-- 一般查询条件 -->
+	<sql id="generic_where_clause">
+	    <where>
+	    	<![CDATA[ 1=1 ]]>
+	    	<!-- 账号 -->
+		    <if test="accountid != null">
+		        <![CDATA[ AND t.ACCOUNT_ID=#{accountid,jdbcType=BIGINT}]]>
+		    </if>
+	     	<!-- (设备id) -->
+	    	<if test="last_pin != null">
+		        <![CDATA[ AND t.LAST_PIN=#{last_pin,jdbcType=INTEGER}]]>
+		    </if>
+		</where>
+	</sql>
+	
+	<select id="exist" resultType="java.lang.Long" parameterType="com.partner.huihua.bean.PinObject">
+	   select count(*) from HH_PIN_INFO t
+	   <include refid="generic_where_clause" />
+	</select>
+	
+	
+	<insert id="insert" parameterType="com.partner.huihua.bean.PinObject">
+		insert into HH_PIN_INFO (
+		<include refid="Base_Column_List" />
+		) values
+		(
+		#{accountid,jdbcType=BIGINT},
+		#{type,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler},
+		#{last_pin,jdbcType=INTEGER},
+		#{count,jdbcType=INTEGER},
+		#{versionOptimizedLock,jdbcType=INTEGER},
+		#{createdOn,jdbcType=TIMESTAMP},
+		#{updatedOn,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<select id="getPinByPojo" resultMap="PinMap">
+	    select <include refid="Base_Column_List" />
+	    from HH_PIN_INFO t 
+	    <include refid="generic_where_clause" />
+	</select>
+	
+	<!-- 使用乐观锁更新一行数据 -->
+	<update id="updateByVersion" parameterType="com.partner.huihua.bean.PinObject">
+	    update HH_PIN_INFO 
+	    <set>
+	        <!-- 不用更新userName -->
+	        
+	        <if test="last_pin != null">
+	            LAST_PIN=#{last_pin,jdbcType=INTEGER},
+	        </if>
+	        <if test="count != null">
+	            COUNT=#{count,jdbcType=INTEGER},
+	        </if>
+	        <!-- 乐观锁值加1 -->
+	        <if test="versionOptimizedLock != null">
+	            version_optimized_lock=${versionOptimizedLock + 1},
+	        </if>
+	        <!-- 不用更新created_on -->
+	        <if test="updatedOn != null">
+	            updated_on=#{updatedOn,jdbcType=TIMESTAMP}
+	        </if>
+	    </set>
+		where account_id=#{accountid,jdbcType=BIGINT} and VERSION_OPTIMIZED_LOCK=#{versionOptimizedLock,jdbcType=INTEGER}
+	</update>
+	
+</mapper>

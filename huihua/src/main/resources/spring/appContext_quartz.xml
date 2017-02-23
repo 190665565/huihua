@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<!-- 增加定时器配置 -->
+	<!-- 线程执行器配置，用于任务注册 -->
+	<bean id="executor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="10" />
+		<property name="maxPoolSize" value="100" />
+		<property name="queueCapacity" value="500" />
+	</bean>
+
+	<!-- 设置调度 -->
+	<bean id="webScheduler"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+
+		<property name="configLocation"
+			value="classpath:config/quartz-focus.properties" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager" ref="transactionManager" />
+
+		<!-- This name is persisted as SCHED_NAME in db. for local testing could 
+			change to unique name to avoid collision with dev server -->
+		<property name="schedulerName" value="quartzScheduler" />
+
+		<!-- Will update database cron triggers to what is in this jobs file on 
+			each deploy. Replaces all previous trigger and job data that was in the database. 
+			YMMV -->
+		<property name="overwriteExistingJobs" value="true" />
+		<!-- 任务调度延迟时间，单位是秒 -->
+		<property name="startupDelay" value="60" />
+		<property name="applicationContextSchedulerContextKey" value="applicationContext" />
+		<!-- 
+		jobFactory用来注入spring的bean
+		 -->
+		<property name="jobFactory">
+			<bean
+				class="com.sohu.focus.scheduling.common.AutowiringSpringBeanJobFactory" />
+		</property>
+
+		<property name="triggers">
+			<list>
+				<!-- <ref bean="springQuertzTaskSchedulerTesterTigger" /> -->
+				<!-- 每日分红调度  -->
+				<ref bean="dividendTaskSchedulerTigger" />
+				
+				<!-- 基金赎回请求时间点配置 -->
+				<ref bean="fundRansomTaskTigger" />
+			</list>
+		</property>
+		<!-- 任务调度请在list里添加  -->
+		<property name="jobDetails">
+			<list>
+				<!-- <ref bean="springQuertzTaskSchedulerJobDetail" /> -->
+				<!-- 具体分红调度 -->
+				<ref bean="dividendTaskSchedulerJobDetail" />
+				<!-- 基金赎回请求任务内容 -->
+				<ref bean="fundRansomTaskJob" />
+			</list>
+		</property>
+		<property name="taskExecutor" ref="executor" />
+
+	</bean>
+
+</beans>

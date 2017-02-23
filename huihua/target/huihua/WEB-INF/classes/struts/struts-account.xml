@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+    <!-- 提供给焦点的后台接口 -->
+	<!-- 交易相关接口 -->
+	<!-- author jesse wang -->
+	<!-- since 2015-03-11 -->
+	
+	
+	<package name="account-package" extends="json-default" namespace="/api/account">
+	<!-- 定义一个拦截器stack -->
+		<interceptors>
+			<interceptor-stack name="logException">
+				<interceptor-ref name="defaultStack" />
+				<interceptor-ref name="exception">
+					<param name="logEnabled">true</param>
+					<param name="logLevel">info</param>
+				</interceptor-ref>
+			</interceptor-stack>
+		</interceptors>
+		
+		<!-- 修改默认的拦截器stack，原来是defaultStack -->
+		<default-interceptor-ref name="logException" />
+
+		<global-results>
+			<result name="error">/error.html</result>
+		</global-results>
+
+		<global-exception-mappings>
+			<exception-mapping result="error" exception="java.lang.Exception"></exception-mapping>
+		</global-exception-mappings>
+	<!-- 查询账户信息记录 -->
+	    <action name="count" class="com.partner.huihua.action.account.AccountAction" method="count">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	    <!-- 注册 -->
+	    <action name="reg" class="com.partner.huihua.action.account.AccountAction" method="reg">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	     <!-- 登录 -->
+	    <action name="login" class="com.partner.huihua.action.account.AccountAction" method="login">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	     <!-- 下发验证码 -->
+	    <action name="sendpin" class="com.partner.huihua.action.account.AccountAction" method="sendpin">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	     <!-- 验证验证码 -->
+	    <action name="checkPIN" class="com.partner.huihua.action.account.AccountAction" method="checkpin">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	    <!-- bind手机 -->
+	    <action name="bindmobile" class="com.partner.huihua.action.account.AccountAction" method="bindMobile">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	    <!-- 修改手机 -->
+	    <action name="changemobile" class="com.partner.huihua.action.account.AccountAction" method="changeMobile">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	     <!-- 找回密码 -->
+	    <action name="pwdback" class="com.partner.huihua.action.account.AccountAction" method="pwdBack">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	     <!-- 修改密码by旧密码 -->
+	    <action name="changepwd" class="com.partner.huihua.action.account.AccountAction" method="changePwdByPwd">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	    <!-- 用户信息补全 -->
+	    <action name="supplement" class="com.partner.huihua.action.account.AccountAction" method="supplement">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	     <!-- 验证手机是否注册过 -->
+	    <action name="isexistmobile" class="com.partner.huihua.action.account.AccountAction" method="isexistmobile">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	</package>
+	
+</struts>

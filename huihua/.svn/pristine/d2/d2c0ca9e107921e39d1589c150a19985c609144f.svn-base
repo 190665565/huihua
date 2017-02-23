@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<properties>
+		<property name="dialect" value="mysql" />
+		<property name="pageSqlId" value=".*Page.*" />
+	</properties>
+	<typeAliases>
+		<typeAlias type="com.partner.huihua.utils.page.PageInfo" alias="page" />
+	</typeAliases>
+	<plugins>
+		<plugin interceptor="com.partner.huihua.utils.page.PageInterceptor">
+		</plugin>
+	</plugins>
+	<mappers>
+		<mapper resource="mapping/AccountInfoMapper.xml" />
+		<mapper resource="mapping/PinMapper.xml" />
+		<mapper resource="mapping/ProceedsInfoMapper.xml" />
+		<mapper resource="mapping/ProductInfoMapper.xml" />
+		<mapper resource="mapping/TransInfoMapper.xml" />
+		<mapper resource="mapping/NoticeInfoMapper.xml" />
+		<mapper resource="mapping/SuggestInfoMapper.xml" />
+	</mappers>
+
+</configuration>

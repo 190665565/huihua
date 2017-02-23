@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.partner.huihua.mapper.ExchangeValidateMapper">
+    <!--核销验证码   映射 -->
+	<resultMap id="ExchaneValidateMap" type="com.partner.huihua.bean.ExchangeValidateObj" >
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="VALIDATE_CODE" property="validateCode" jdbcType="VARCHAR" />
+		<result column="STATUS" property="status" typeHandler="com.partner.huihua.utils.common.IntEnumHandler"/>
+		<result column="VERSION_OPTIMIZED_LOCK" property="versionOptimizedLock" jdbcType="BIGINT" />
+		<result column="CREATED_ON" property="createdOn" jdbcType="TIMESTAMP" />
+		<result column="UPDATED_ON" property="updatedOn" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	
+	<!-- 所有字段 -->
+	<sql id="Base_Column_List" >
+		ID,
+		VALIDATE_CODE,
+		STATUS,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+	</sql>
+	
+	<!-- 一般查询条件 -->
+	<sql id="generic_where_clause">
+	    <where>
+	    	<![CDATA[ 1=1 ]]>
+	    	<!-- 验证码 -->
+		    <if test="validateCode != null">
+		        <![CDATA[ AND t.VALIDATE_CODE=#{validateCode,jdbcType=VARCHAR} ]]>
+		    </if>
+		    <!-- 账号 -->
+		    <if test="status != null">
+			    AND t.STATUS=#{status,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler}
+			</if>
+		</where>
+	</sql>
+	
+	<!-- insert -->
+	<insert id="insert" parameterType="com.partner.huihua.bean.ExchangeValidateObj">
+		insert into HH_EXCHANGE_VALIDATE (
+		VALIDATE_CODE,
+		STATUS,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+		) values
+		(
+		#{validateCode,jdbcType=VARCHAR},
+		#{status,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler},
+		#{versionOptimizedLock,jdbcType=BIGINT},
+		#{createdOn,jdbcType=TIMESTAMP},
+		#{updatedOn,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<!-- 使用乐观锁更新一行数据 -->
+	<update id="updateByVersion" parameterType="com.partner.huihua.bean.ExchangeValidateObj">
+	    update HH_EXCHANGE_VALIDATE 
+	    <set>
+	        
+	        <if test="status != null">
+	            STATUS=#{status,typeHandler=com.partner.huihua.utils.common.IntEnumHandler},
+	        </if>
+	        <!-- 乐观锁值加1 -->
+	        <if test="versionOptimizedLock != null">
+	            version_optimized_lock=${versionOptimizedLock + 1},
+	        </if>
+	    </set>
+		where ID=#{id,jdbcType=BIGINT} and VERSION_OPTIMIZED_LOCK=#{versionOptimizedLock,jdbcType=INTEGER}
+	</update>
+	
+	
+	<select id="selectForObject" resultMap="ExchaneValidateMap">
+	    select ID,
+		VALIDATE_CODE,
+		STATUS,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+	    from HH_EXCHANGE_VALIDATE t
+	    where VALIDATE_CODE=#{validateCode,jdbcType=VARCHAR}
+	    and STATUS=#{status,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler}
+	</select>
+	
+	
+</mapper>

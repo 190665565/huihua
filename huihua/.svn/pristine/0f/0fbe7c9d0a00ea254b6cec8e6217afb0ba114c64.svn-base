@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+    <constant name="struts.i18n.encodeing" value="UTF-8"/>
+    <constant name="struts.devMode" value="false" />
+    <!-- struts.objectFactory 意思是指 srust2的action类的对象由 spring来创建 -->
+    <constant name="struts.objectFactory" value="spring" />
+    <constant name="struts.objectFactory.spring.autoWire" value="name" />
+    <!-- 上传最大的文件为200M -->
+	<constant name= "struts.multipart.maxSize" value="209715200" />
+	
+	
+	<include file="struts/struts-test.xml" />
+	<include file="struts/struts-account.xml" />
+	<include file="struts/struts-proceeds.xml" />
+	<include file="struts/struts-product.xml" />
+	<include file="struts/struts-trans.xml" />
+	<include file="struts/struts-notice.xml" />
+	<include file="struts/struts-suggest.xml" />
+</struts>

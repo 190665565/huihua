@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.partner.huihua.mapper.AccountInfoMapper">
+    <!--映射 -->
+	<resultMap id="AccountInfoMap" type="com.partner.huihua.bean.AccountInfo" >
+		<id column="ACCOUNT_ID" property="accountID" jdbcType="BIGINT" />
+		<result column="EQUIPMENT_ID" property="equipmentID" jdbcType="VARCHAR" />
+		<result column="USER_NAME" property="userName" jdbcType="VARCHAR" />
+		<result column="BIRTHDAY" property="birthday" jdbcType="BIGINT" />
+		<result column="SEX" property="sex" jdbcType="INTEGER" typeHandler="com.partner.huihua.utils.common.IntEnumHandler" />
+		<result column="MOBILE" property="mobile" jdbcType="BIGINT" />
+		<result column="ADDRESS" property="address" jdbcType="VARCHAR" />
+		<result column="ACCOUNT_STATUS" property="status" jdbcType="INTEGER" typeHandler="com.partner.huihua.utils.common.IntEnumHandler" />
+		<result column="LOGIN_PWD" property="loginPwd" jdbcType="VARCHAR" />
+		<result column="PAY_PWD" property="payPwd" jdbcType="VARCHAR" />
+		<result column="ACCOUNT_AMT" property="accountAmt" jdbcType="NUMERIC" />
+		<result column="WITHDRAW_AMT" property="withdrawAmt" jdbcType="NUMERIC" />
+		<result column="ONWAY_AMT" property="onwayAmt" jdbcType="NUMERIC" />
+		<result column="FREEZE_AMT" property="freezeAmt" jdbcType="NUMERIC" />
+		<result column="LAST_IP" property="lastIP" jdbcType="VARCHAR" />
+		<result column="LAST_LOGIN_TIME" property="last_login_time" jdbcType="TIMESTAMP" />
+		<result column="SALT" property="salt" jdbcType="VARCHAR"/>
+		<result column="VERSION_OPTIMIZED_LOCK" property="versionOptimizedLock" jdbcType="INTEGER" />
+		<result column="CREATED_ON" property="createdOn" jdbcType="TIMESTAMP" />
+		<result column="UPDATED_ON" property="updatedOn" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	
+	<!-- 所有字段 -->
+	<sql id="Base_Column_List" >
+		ACCOUNT_ID,
+		EQUIPMENT_ID,
+		USER_NAME,
+		BIRTHDAY,
+		SEX,
+		MOBILE,
+		ADDRESS,
+		ACCOUNT_STATUS,
+		LOGIN_PWD,
+		PAY_PWD,
+		ACCOUNT_AMT,
+		WITHDRAW_AMT,
+		ONWAY_AMT,
+		FREEZE_AMT,
+		LAST_IP,
+		LAST_LOGIN_TIME,
+		SALT,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+	</sql>
+	<!-- 一般查询条件 -->
+	<sql id="generic_where_clause">
+	    <where>
+	    	<![CDATA[ 1=1 ]]>
+	    	<!-- 账号 -->
+		    <if test="accountID != null">
+		        <![CDATA[ AND t.ACCOUNT_ID=#{accountID,jdbcType=BIGINT} ]]>
+		    </if>
+	     	<!-- (设备id) -->
+	    	<if test="equipmentID != null">
+		        <![CDATA[ AND t.EQUIPMENT_ID=#{equipmentID,jdbcType=VARCHAR}]]>
+		    </if>
+		    <!-- (用户名) -->
+		    <if test="userName != null">
+		       <![CDATA[ AND t.USER_NAME=#{userName,jdbcType=VARCHAR} ]]>
+		    </if>
+		    <!-- (手机号) -->
+		    <if test="mobile != null">
+		       <![CDATA[ AND t.MOBILE=#{mobile,jdbcType=BIGINT}]]>
+		    </if>
+		     <!-- (登录密码) -->
+		    <if test="loginPwd != null">
+		        <![CDATA[ AND t.LOGIN_PWD=#{loginPwd,jdbcType=VARCHAR}]]>
+		    </if>
+			<!-- 用户状态 -->
+			<if test="status != null">
+			    <![CDATA[ AND t.ACCOUNT_STATUS=#{status,jdbcType=INTEGER,typeHandler=com.sohu.focus.util.common.IntEnumHandler}]]>
+			</if>
+		</where>
+	</sql>
+	
+	<select id="count" resultType="java.lang.Long">
+	   select count(*) from HH_ACCOUNT_INFO t
+	   <include refid="generic_where_clause" />
+	   
+	</select>
+	
+	<!-- 注册 -->
+	<insert id="insert" parameterType="com.partner.huihua.bean.AccountInfo">
+		insert into HH_ACCOUNT_INFO (
+		EQUIPMENT_ID,
+		ACCOUNT_STATUS,
+		ACCOUNT_AMT,
+		WITHDRAW_AMT,
+		ONWAY_AMT,
+		FREEZE_AMT,
+		SALT,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+		) values
+		(
+		#{equipmentID,jdbcType=VARCHAR},
+		#{status,jdbcType=BIGINT,typeHandler=com.partner.huihua.utils.common.IntEnumHandler},
+		#{accountAmt,jdbcType=NUMERIC},
+		#{withdrawAmt,jdbcType=NUMERIC},
+		#{onwayAmt,jdbcType=NUMERIC},
+		#{freezeAmt,jdbcType=NUMERIC},
+		#{salt,jdbcType=BIGINT},
+		#{versionOptimizedLock,jdbcType=INTEGER},
+		#{createdOn,jdbcType=TIMESTAMP},
+		#{updatedOn,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<select id="getAcByAc" resultMap="AccountInfoMap">
+	    select <include refid="Base_Column_List" />
+	    from HH_ACCOUNT_INFO t 
+	    <include refid="generic_where_clause" />
+	</select>
+	
+	<!-- 使用乐观锁更新一行数据 -->
+	<update id="updateByVersion" parameterType="com.partner.huihua.bean.AccountInfo">
+	    update HH_ACCOUNT_INFO 
+	    <set>
+	        <!-- 不用更新userName -->
+	        
+	        <if test="accountAmt != null">
+	            account_amt=#{accountAmt,jdbcType=NUMERIC},
+	        </if>
+	        <if test="withdrawAmt != null">
+	            withdraw_amt=#{withdrawAmt,jdbcType=NUMERIC},
+	        </if>
+	        <if test="onwayAmt != null">
+	            onway_amt=#{onwayAmt,jdbcType=NUMERIC},
+	        </if>
+	        <if test="freezeAmt != null">
+	            freeze_amt=#{freezeAmt,jdbcType=NUMERIC},
+	        </if>
+	        <if test="userName != null">
+	            user_name=#{userName,jdbcType=VARCHAR},
+	        </if>
+	        <if test="mobile != null">
+	            mobile=#{mobile,jdbcType=BIGINT},
+	        </if>
+	        <if test="loginPwd != null">
+	            LOGIN_PWD=#{loginPwd,jdbcType=VARCHAR},
+	        </if>
+	        <if test="status != null">
+	            account_status=#{status,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler},
+	        </if>
+	        <if test="address != null">
+	            address=#{address,jdbcType=VARCHAR},
+	        </if>
+	         <if test="birthday != null">
+	            birthday=#{birthday,jdbcType=BIGINT},
+	        </if>
+	         <if test="sex != null">
+	            sex=#{sex,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler},
+	        </if>
+	        <!-- 乐观锁值加1 -->
+	        <if test="versionOptimizedLock != null">
+	            version_optimized_lock=${versionOptimizedLock + 1},
+	        </if>
+	        <!-- 不用更新created_on -->
+	        <if test="updatedOn != null">
+	            updated_on=#{updatedOn,jdbcType=TIMESTAMP}
+	        </if>
+	    </set>
+		where account_id=#{accountID,jdbcType=BIGINT} and VERSION_OPTIMIZED_LOCK=#{versionOptimizedLock,jdbcType=INTEGER}
+	</update>
+	
+</mapper>

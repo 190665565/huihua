@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.partner.huihua.mapper.ProductMapper">
+    <!--映射 -->
+	<resultMap id="ProductInfoMap" type="com.partner.huihua.bean.ProductInfo" >
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="PNAME" property="name" jdbcType="BIGINT" />
+		<result column="COST" property="cost" jdbcType="NUMERIC" />
+		<result column="SALT" property="salt" jdbcType="NUMERIC" />
+		<result column="PRIMECOST" property="primecost" jdbcType="NUMERIC" />
+		<result column="PDESC" property="desc" jdbcType="VARCHAR" />
+		<result column="INSTRUCTIONS" property="instructions" jdbcType="VARCHAR" />
+		<result column="PICTURE_URL" property="pictureUrl" jdbcType="VARCHAR" />
+		<result column="MP_URL" property="mpUrl" jdbcType="VARCHAR" />
+		<result column="TYPE" property="type" jdbcType="INTEGER" />
+		<result column="IS_SHOW" property="is_show" jdbcType="INTEGER" />
+		<result column="PSTATUS" property="status" typeHandler="com.partner.huihua.utils.common.IntEnumHandler" />
+		<result column="REMAIN_NUM" property="remain" jdbcType="BIGINT" />
+		<result column="EXCHANGE_NUM" property="exchange" jdbcType="BIGINT" />
+		<result column="VERSION_OPTIMIZED_LOCK" property="versionOptimizedLock" jdbcType="BIGINT" />
+		<result column="CREATED_ON" property="createdOn" jdbcType="TIMESTAMP" />
+		<result column="UPDATED_ON" property="updatedOn" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	
+	<!-- 所有字段 -->
+	<sql id="Base_Column_List" >
+		ID,
+		PNAME,
+		COST,
+		SALT,
+		PRIMECOST,
+		PDESC,
+		INSTRUCTIONS,
+		PICTURE_URL,
+		MP_URL,
+		TYPE,
+		PSTATUS,
+		REMAIN_NUM,
+		EXCHANGE_NUM,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+	</sql>
+	
+	<!-- 一般查询条件 -->
+	<sql id="generic_where_clause">
+	    <where>
+	    	<![CDATA[ 1=1 ]]>
+	    	<!-- 账号 -->
+		    <if test="id != null">
+		        <![CDATA[ AND t.ID=#{id,jdbcType=BIGINT} ]]>
+		    </if>
+		    <if test="type != null">
+		        <![CDATA[ AND t.TYPE=#{type,jdbcType=BIGINT} ]]>
+		    </if>
+		    <if test="is_show != null">
+		        <![CDATA[ AND t.IS_SHOW=#{is_show,jdbcType=BIGINT} ]]>
+		    </if>
+		</where>
+	</sql>
+	
+	<!-- insert -->
+	<insert id="insert" parameterType="com.partner.huihua.bean.TransInfo">
+		insert into HH_PRODUCT_INFO (
+		PNAME,
+		COST,
+		SALT,
+		PRIMECOST,
+		PDESC,
+		INSTRUCTIONS,
+		PICTURE_URL,
+		MP_URL,
+		TYPE,
+		PSTATUS,
+		REMAIN_NUM,
+		EXCHANGE_NUM,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+		) values
+		(
+		#{name,jdbcType=VARCHAR},
+		#{cost,jdbcType=NUMERIC},
+		#{salt,jdbcType=NUMERIC},
+		#{primecost,jdbcType=NUMERIC},
+		#{desc,jdbcType=VARCHAR},
+		#{instructions,jdbcType=VARCHAR},
+		#{pictureUrl,jdbcType=VARCHAR},
+		#{mpUrl,jdbcType=VARCHAR},
+		#{type,jdbcType=INTEGER},
+		#{status,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler},
+		#{remain,jdbcType=BIGINT},
+		#{exchange,jdbcType=BIGINT},
+		#{versionOptimizedLock,jdbcType=BIGINT},
+		#{createdOn,jdbcType=TIMESTAMP},
+		#{updatedOn,jdbcType=TIMESTAMP}
+		)
+	
+	</insert>
+	
+	<select id="getProductByPage" resultMap="ProductInfoMap">
+	    select <include refid="Base_Column_List" />
+	    from HH_PRODUCT_INFO t 
+	    <include refid="generic_where_clause" />
+	    Order by id asc
+	</select>
+	
+	<select id="getProductDetail" resultMap="ProductInfoMap">
+	     select <include refid="Base_Column_List" />
+	    from HH_PRODUCT_INFO t
+	    <include refid="generic_where_clause" />
+	</select>
+	
+</mapper>

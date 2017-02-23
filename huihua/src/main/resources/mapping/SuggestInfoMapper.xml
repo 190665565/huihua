@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.partner.huihua.mapper.SuggestMapper">
+    <!--映射 -->
+	<resultMap id="SuggestInfoMap" type="com.partner.huihua.bean.SuggestInfo" >
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="ACCOUNT_ID" property="accountID" jdbcType="BIGINT" />
+		<result column="CONTENT" property="content" jdbcType="VARCHAR" />
+		<result column="VERSION_OPTIMIZED_LOCK" property="versionOptimizedLock" jdbcType="BIGINT" />
+		<result column="CREATED_ON" property="createdOn" jdbcType="TIMESTAMP" />
+		<result column="UPDATED_ON" property="updatedOn" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	
+	<!-- 所有字段 -->
+	<sql id="Base_Column_List" >
+		ID,
+		ACCOUNT_ID,
+		CONTENT,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+	</sql>
+	
+	
+	
+	<!-- insert -->
+	<insert id="insert" parameterType="com.partner.huihua.bean.SuggestInfo">
+		insert into HH_SUGGEST_INFO (
+		ACCOUNT_ID,
+		CONTENT,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+		) values
+		(
+		#{accountID,jdbcType=BIGINT},
+		#{content,jdbcType=VARCHAR},
+		#{versionOptimizedLock,jdbcType=BIGINT},
+		#{createdOn,jdbcType=TIMESTAMP},
+		#{updatedOn,jdbcType=TIMESTAMP}
+		)
+	</insert>
+</mapper>

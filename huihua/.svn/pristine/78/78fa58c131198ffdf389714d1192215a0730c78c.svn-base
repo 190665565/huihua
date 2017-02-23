@@ -1,0 +1,15 @@
+#jdbc.driver=org.mariadb.jdbc.Driver
+#jdbc.url=jdbc:mariadb://101.200.228.71:3306/hh
+
+jdbc.driver=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://101.200.228.71:3306/hh
+jdbc.user=hh
+jdbc.pwd=hh
+
+pool.initialSize=5
+pool.maxActive=20
+pool.maxIdle=8
+pool.minIdle=5
+pool.maxWait=60000
+pool.removeAbandoned=true
+pool.removeAbandonedTimeout=300

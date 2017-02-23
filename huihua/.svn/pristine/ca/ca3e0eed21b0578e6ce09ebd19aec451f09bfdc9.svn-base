@@ -1,0 +1,176 @@
+package com.partner.huihua.test;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+import net.sf.json.JSONObject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.alibaba.fastjson.JSONArray;
+import com.partner.huihua.bean.ProductInfo;
+import com.partner.huihua.enums.ProductStatus;
+import com.partner.huihua.mapper.ProductMapper;
+import com.partner.huihua.service.trans.TransService;
+import com.partner.huihua.utils.common.HttpHelper;
+import com.partner.huihua.utils.common.XString;
+import com.partner.huihua.utils.security.StrMD5;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = { "classpath*:spring/appContext.xml" })
+public class ProductTest {
+	@Autowired
+	TransService transservice;
+	@Autowired
+	ProductMapper productmapper;
+
+//	public static String host = "101.200.228.71";
+	public static String host = "localhost";
+
+	@Test
+	public void add() {
+		Timestamp now  = new Timestamp(System.currentTimeMillis());
+		for(int i=0;i<1;i++){
+			ProductInfo pi = new ProductInfo();
+			pi.setName("测试商品"+i);
+			pi.setCost(new BigDecimal(1.00));
+			pi.setSalt(new BigDecimal(20.00));
+			pi.setPrimecost(new BigDecimal(50.00));
+			pi.setPictureUrl("www.big.com\\/big_picture\\/test.jpg");
+			pi.setMpUrl("www.min.com\\/min_picture\\/test.jpg");
+			pi.setDesc("商品描述"+i);
+			pi.setInstructions("使用说明"+i);
+			pi.setType(1);
+			pi.setStatus(ProductStatus.have);
+			pi.setRemain(1000L);
+			pi.setExchange(20000L);
+			pi.setVersionOptimizedLock(0);
+			pi.setCreatedOn(now);
+			pi.setUpdatedOn(now);
+			productmapper.insert(pi);
+		}
+		
+	}
+	
+	@Test
+	public void list() {
+		String url = "http://"+host+"/huihua/api/product/productlist.action";
+		String accountid = "1";
+		
+		String sign = StrMD5.getInstance().signature("");
+		
+		String respons = HttpHelper
+				.getInstance(url)
+				.set("accountid", accountid)
+				.set("type", 1)
+				.set("page", 2)
+				.set("rows", 2)
+				.set("sign", sign).post();
+		
+		JSONObject j_all = JSONObject.fromObject(respons);
+		JSONArray ja = JSONArray.parseArray(j_all.get("data").toString());
+		int size = ja.size();
+		for(int i=0;i<size;i++){
+			JSONObject o = JSONObject.fromObject(ja.get(i));
+			System.out.println(o.get("picture_url"));
+			System.out.println(o.get("mp_url"));
+		}
+	
+		System.out.println(respons);
+		
+	}
+	
+	@Test
+	public void productDetail() {
+		String url = "http://"+host+"/huihua/api/product/productdetail.action";
+		String productid = "1";
+		
+		String sign = StrMD5.getInstance().signature("");
+		
+		String respons = HttpHelper
+				.getInstance(url)
+				.set("productid", productid)
+				.set("sign", sign).post();
+		System.out.println(respons);
+		
+		JSONObject resp = JSONObject.fromObject(respons);
+		System.out.println(resp.getString("data"));
+		JSONObject resp_data = JSONObject.fromObject(resp.getString("data"));
+		System.out.println(resp_data.getString("picture_url"));
+		
+		
+//		JSONObject ret = new JSONObject();
+//		ret.put("url", "www.big.com/big_picture/test.jpg");
+//		System.out.println(ret.toString());
+
+		
+	}
+	
+	@Test
+	public void exchange(){
+		
+		
+		String url = "http://"+host+"/huihua/api/trans/exchange.action";
+		String accountid = "1";
+		String productid = "15";
+		String number = "1";
+		String name = "王";
+		String mobile = "15510750798";
+		String address = "北京市立水桥";
+		String pc = "150100";
+		
+
+		String sign = StrMD5.getInstance().signature(accountid, productid,number,XString.encode(name),mobile,XString.encode(address),pc, "ZBmL#@Tgvi");
+		String respons = HttpHelper
+				.getInstance(url)
+				.set("accountid", accountid)
+				.set("productid", productid)
+				.set("number", number)
+				.set("name", name)
+				.set("mobile", mobile)
+				.set("address", address)
+				.set("pc", pc)
+				.set("sign", sign).post();
+		System.out.println(respons);
+	}
+	
+	
+	@Test
+	public void translist(){
+		String url = "http://"+host+"/huihua/api/trans/translist.action";
+		String accountid = "1";
+		
+		String sign = StrMD5.getInstance().signature("");
+		
+		String respons = HttpHelper
+				.getInstance(url)
+				.set("accountid", accountid)
+				.set("page", 1)
+				.set("rows", 2)
+				.set("sign", sign).post();
+		System.out.println(respons);
+	}
+	
+	@Test
+	public void transDetail(){
+		String url = "http://"+host+"/huihua/api/trans/transdetail.action";
+		String trans_no = "TN2015091114534700000000000001";
+		
+		String sign = StrMD5.getInstance().signature("");
+		
+		String respons = HttpHelper
+				.getInstance(url)
+				.set("transno", trans_no)
+				.set("sign", sign).post();
+		System.out.println(respons);
+	}
+
+	
+
+	
+	
+}

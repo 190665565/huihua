@@ -1,0 +1,94 @@
+package com.partner.huihua.test;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.partner.huihua.bean.AccountInfo;
+import com.partner.huihua.bean.ExchangeValidateObj;
+import com.partner.huihua.enums.AccountStatus;
+import com.partner.huihua.enums.ExchangeNoStatus;
+import com.partner.huihua.mapper.ExchangeValidateMapper;
+import com.partner.huihua.utils.common.HttpHelper;
+import com.partner.huihua.utils.common.XString;
+import com.partner.huihua.utils.security.StrMD5;
+
+//核销 测试
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = { "classpath*:spring/appContext.xml" })
+public class HeXiaoTest {
+	public static String host = "101.200.228.71";
+//	public static String host = "localhost";
+	@Autowired
+	private ExchangeValidateMapper mapper;
+	
+	@Test
+	public void testInsert() {
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		ExchangeValidateObj info = new ExchangeValidateObj();
+		info.setValidateCode("123456");
+		info.setStatus(ExchangeNoStatus.VALID);
+		info.setVersionOptimizedLock(0);
+		info.setCreatedOn(now);
+		info.setUpdatedOn(now);
+		mapper.insert(info);
+	}
+	
+	@Test
+	public void testSelect() {
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		ExchangeValidateObj info = new ExchangeValidateObj();
+		info.setValidateCode("123456");
+		info.setStatus(ExchangeNoStatus.VALID);
+
+		info = mapper.selectForObject(info);
+		System.out.println(info.getId()+""+info.getValidateCode()+""+info.getStatus().getValue()+""+info.getVersionOptimizedLock());
+	}
+	
+	@Test
+	public void testUpdate() {
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		ExchangeValidateObj info = new ExchangeValidateObj();
+		info.setValidateCode("123456");
+		info.setStatus(ExchangeNoStatus.VALID);
+
+		info = mapper.selectForObject(info);
+		info.setStatus(ExchangeNoStatus.INVALID);
+		
+		mapper.updateByVersion(info);
+		
+	}
+	
+	@Test
+	public void generateCode() {
+		String url = "http://"+host+"/huihua/api/hx/hxno.action";
+		String sign = StrMD5.getInstance().signature("ZBmL#@Tgvi");
+		String respons = HttpHelper
+				.getInstance(url)
+				.set("sign", sign).post();
+		System.out.println(respons);
+		
+	}
+	
+	@Test
+	public void validateCode() {
+		String url = "http://"+host+"/huihua/api/hx/validatehxno.action";
+		String code = "29813653";
+		String sign = StrMD5.getInstance().signature(code,"ZBmL#@Tgvi");
+		String respons = HttpHelper
+				.getInstance(url)
+				.set("code", code)
+				.set("sign", sign).post();
+		System.out.println(respons);
+		
+	}
+	
+	
+	
+
+}

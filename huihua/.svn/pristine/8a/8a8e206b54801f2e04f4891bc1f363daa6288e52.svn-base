@@ -1,0 +1,8 @@
+modle=test
+sendto_url=http://utf8.sms.webchinese.cn/
+uid=hui_hua
+sms_key=e9c45e81d02484a077e1
+smsText=您的验证码为：
+max_num=3
+pin_len=5
+cycle=70

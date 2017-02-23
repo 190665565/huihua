@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+<!-- 0/5 * * * * ?  -->
+	<!-- 触发器 -->
+    <bean id="springQuertzTaskSchedulerTesterTigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="springQuertzTaskSchedulerJobDetail"/>
+        <property name="cronExpression" value="0 1 23 * * ?" />    
+    </bean>
+    
+    <!--任务调度在 appContext_quartz.xml webScheduler的 jobDetails进行添加-->
+    
+	<bean id="springQuertzTaskSchedulerJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="jobClass"
+			value="com.sohu.focus.scheduling.SpringQuertzTaskSchedulerTester" />
+		<!-- fail-over 重写执行失败的任务,default=false -->
+		<property name="requestsRecovery" value="false" />
+		<!-- 表示任务完成之后是否依然保留到数据库，默认false -->
+		<property name="durability" value="true" /> 
+	</bean>
+	
+</beans>       

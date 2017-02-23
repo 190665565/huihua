@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+    <!-- 定时向博时提交当天的赎回请求 -->
+	<!-- author rainyhao -->    
+	<!-- since 2015-04-15 -->
+    
+	<!-- 22:10开始逐个向博时提交当天0:00-22:00之间的赎回请求 -->
+	<bean id="fundRansomTaskTigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+	    <!-- 任务内容 -->
+        <property name="jobDetail" ref="fundRansomTaskJob"/>
+        <!-- 任务开始时间 -->
+        <property name="cronExpression" value="0 10 22 * * ?" />    
+    </bean> 
+	
+	<!-- 任务内容 -->
+	<bean id="fundRansomTaskJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+	    <!-- 任务内容 -->
+		<property name="jobClass" value="com.sohu.focus.scheduling.FundRansomTaskScheduler" />
+		<!-- fail-over 重写执行失败的任务,default=false -->
+		<property name="requestsRecovery" value="false" />
+		<!-- 表示任务完成之后是否依然保留到数据库，默认false -->
+		<property name="durability" value="true" /> 
+	</bean>
+	
+</beans>       

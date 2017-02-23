@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+    <!-- 提供给焦点的后台接口 -->
+	<!-- 产品相关接口 -->
+	<!-- author jesse wang -->
+	<!-- since 2015-03-11 -->
+	
+	
+	<package name="suggest-package" extends="json-default" namespace="/api/suggest">
+	<!-- 定义一个拦截器stack -->
+		<interceptors>
+			<interceptor-stack name="logException">
+				<interceptor-ref name="defaultStack" />
+				<interceptor-ref name="exception">
+					<param name="logEnabled">true</param>
+					<param name="logLevel">info</param>
+				</interceptor-ref>
+			</interceptor-stack>
+		</interceptors>
+		
+		<!-- 修改默认的拦截器stack，原来是defaultStack -->
+		<default-interceptor-ref name="logException" />
+
+		<global-results>
+			<result name="error">/error.html</result>
+		</global-results>
+
+		<global-exception-mappings>
+			<exception-mapping result="error" exception="java.lang.Exception"></exception-mapping>
+		</global-exception-mappings>
+	<!-- 公告列表 -->
+	     <action name="suggestadd" class="com.partner.huihua.action.suggest.SuggestAction" method="add">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+
+	
+	    
+	</package>
+	
+</struts>

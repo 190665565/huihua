@@ -1,0 +1,44 @@
+package test.validate;
+
+import java.sql.Timestamp;
+
+import com.partner.huihua.utils.common.DateStyle;
+import com.partner.huihua.utils.common.DateUtil;
+import com.partner.huihua.utils.common.HttpHelper;
+import com.partner.huihua.utils.common.XString;
+import com.partner.huihua.utils.security.MD5Bit32;
+
+public class TestValidateCode {
+	
+	public static void send_validate(){
+		String url = "http://utf8.sms.webchinese.cn/";
+		HttpHelper http  = HttpHelper.getInstance(url);
+		String result = http.set("Uid", "hui_hua")
+		.set("Key", "e9c45e81d02484a077e1")
+		.set("KeyMD5", MD5Bit32.getInstance().md5("e9c45e81d02484a077e1"))
+		.set("smsMob", "15510750798")
+		.set("smsText", "您的验证码为：111111")
+		.post();
+		System.out.println("*****************"+result);
+		
+	}
+	
+	public static void testSendPin(){
+		String url = "http://61.48.184.153/huihua/api/account/sendpin.action";
+		HttpHelper http  = HttpHelper.getInstance(url);
+		String result = http.set("accountid", "1")
+						.set("mobile", "15510750798")
+						.set("type", 124)
+						.set("sign", "").post();
+		System.out.println("*****************"+result);
+	}
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+//		send_validate();
+//		testSendPin();
+//		System.out.println(DateUtil.TimestampToString(new Timestamp(System.currentTimeMillis()) , DateStyle.YYYY_MM_DD));
+
+	}
+
+}

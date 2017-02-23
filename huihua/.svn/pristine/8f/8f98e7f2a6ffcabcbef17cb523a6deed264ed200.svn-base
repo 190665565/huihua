@@ -1,0 +1,135 @@
+package com.partner.huihua.bean;
+
+import java.math.BigDecimal;
+
+import com.partner.huihua.enums.ProductStatus;
+import com.partner.huihua.enums.TransStatus;
+import com.partner.huihua.utils.base.MapperVO;
+
+
+
+/**
+ * mybatis 实体,  兑换交易表
+ * 表: HH_TRANS_INFO
+ * @author jesse wang
+ * @since 2015-3-9 下午13:53:59
+ */
+public class TransInfo extends MapperVO{
+	//交易流水号
+	private String transNo;
+	//账户id
+	private Long accountId;
+	//产品id
+	private Long productId;
+	//产品名称
+	private String pname;
+	//产品url
+	private String pictureUrl;
+	//小图片url
+	private String mpUrl;
+	//数量
+	private Integer number;
+	//总金额
+	private BigDecimal amt;
+	//收件人姓名
+	private String name;
+	//联系手机号
+	private String mobile;
+	//收货地址
+	private String address;
+	//邮编
+	private Long pc;
+	//产品类型
+	private TransStatus status;
+	//描述
+	private String desc;
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getMobile() {
+		return mobile;
+	}
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public Long getPc() {
+		return pc;
+	}
+	public void setPc(Long pc) {
+		this.pc = pc;
+	}
+
+	public String getTransNo() {
+		return transNo;
+	}
+	public void setTransNo(String transNo) {
+		this.transNo = transNo;
+	}
+	public Long getAccountId() {
+		return accountId;
+	}
+	public void setAccountId(Long accountId) {
+		this.accountId = accountId;
+	}
+	public Long getProductId() {
+		return productId;
+	}
+	public void setProductId(Long productId) {
+		this.productId = productId;
+	}
+	public String getPname() {
+		return pname;
+	}
+	public void setPname(String pname) {
+		this.pname = pname;
+	}
+	public Integer getNumber() {
+		return number;
+	}
+	public void setNumber(Integer number) {
+		this.number = number;
+	}
+	public BigDecimal getAmt() {
+		return amt;
+	}
+	public void setAmt(BigDecimal amt) {
+		this.amt = amt;
+	}
+	public TransStatus getStatus() {
+		return status;
+	}
+	public void setStatus(TransStatus status) {
+		this.status = status;
+	}
+	public String getDesc() {
+		return desc;
+	}
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+	public String getPictureUrl() {
+		return pictureUrl;
+	}
+	public void setPictureUrl(String pictureUrl) {
+		this.pictureUrl = pictureUrl;
+	}
+	public String getMpUrl() {
+		return mpUrl;
+	}
+	public void setMpUrl(String mpUrl) {
+		this.mpUrl = mpUrl;
+	}
+
+	
+	
+}

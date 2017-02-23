@@ -1,0 +1,338 @@
+package com.partner.huihua.service.account.impl;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.partner.huihua.bean.AccountInfo;
+import com.partner.huihua.bean.PinObject;
+import com.partner.huihua.bean.SMSObject;
+import com.partner.huihua.enums.AccountStatus;
+import com.partner.huihua.enums.VerType;
+import com.partner.huihua.mapper.AccountInfoMapper;
+import com.partner.huihua.mapper.PinMapper;
+import com.partner.huihua.service.account.AccountService;
+import com.partner.huihua.utils.common.DateStyle;
+import com.partner.huihua.utils.common.DateUtil;
+import com.partner.huihua.utils.common.PinUtil;
+import com.partner.huihua.utils.common.XString;
+import com.partner.huihua.utils.exception.HuiHuaException;
+import com.partner.huihua.utils.security.StrMD5;
+
+/**
+ * 用户信息操作
+ * @author changjiwang
+ *
+ */
+@Service
+public class AccountServiceImpl implements AccountService{
+	
+	@Autowired
+	private AccountInfoMapper accountinfomapper;
+	@Autowired
+	private PinMapper pinmapper;
+
+	@Override
+	public AccountInfo reg(AccountInfo accountinfo) throws HuiHuaException {
+		// TODO Auto-generated method stub
+		//先查后插入
+		AccountInfo acc = accountinfomapper.getAcByAc(accountinfo);
+		if(acc==null){
+			Timestamp now = new Timestamp(System.currentTimeMillis());
+			AccountInfo info = new AccountInfo();
+			info.setEquipmentID(accountinfo.getEquipmentID());
+			// 注册时默认给定小于8位的随机数字
+			info.setMobile(XString.randomDefaultPhoneNum(10));
+			info.setStatus(AccountStatus.NORMAL);
+			info.setAccountAmt(new BigDecimal(0.00));
+			info.setWithdrawAmt(new BigDecimal(0.00));
+			info.setOnwayAmt(new BigDecimal(0.00));
+			info.setFreezeAmt(new BigDecimal(0.00));
+			info.setSalt(XString.random(8));
+			info.setVersionOptimizedLock(0);
+			info.setCreatedOn(now);
+			info.setUpdatedOn(now);
+			accountinfomapper.insert(info);
+		}
+		//查询并返回
+		acc = accountinfomapper.getAcByAc(accountinfo);
+		return acc;
+	}
+
+	@Override
+	public AccountInfo login(AccountInfo accountinfo) throws HuiHuaException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Transactional
+	@Override
+	public void sendPIN(AccountInfo accountinfo, int type)
+			throws HuiHuaException {
+		// TODO Auto-generated method stub
+		//查看手机号是否是预留手机号
+		AccountInfo ac = new AccountInfo();
+		//根据account_id查询
+		ac = getAccountInfo(accountinfo);
+		if(type==VerType.PWD.getValue()){
+			if(ac==null){
+				throw new HuiHuaException("不是预留手机号，请检查");
+			}
+		}
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		Date current = new Date();
+		PinObject  po = new PinObject();
+		po.setAccountid(accountinfo.getAccountID());
+		po.setType(VerType.forValue(type));
+		PinObject  last_po = pinmapper.getPinByPojo(po);
+		//校验是否满足发送验证码条件，避免被黑
+		Long pin =0L;;
+		if("test".equals(PinUtil.modle)){
+			pin = 111111L;
+		}
+		else{
+			pin = XString.randomDefaultPhoneNum(PinUtil.pin_len);
+		}
+		if(last_po!=null /*&& last_po.getCount()>=PinUtil.max_num*/){
+			Timestamp last = last_po.getUpdatedOn();
+			String current_day=DateUtil.TimestampToString(now,DateStyle.YYYY_MM_DD);
+			String last_item_day = DateUtil.TimestampToString(last_po.getCreatedOn(),DateStyle.YYYY_MM_DD);
+			//判断校验的间隔时间
+			Long jinge = (current.getTime()-last.getTime())/1000;
+			if(jinge < PinUtil.cycle){
+				throw new HuiHuaException("当前用户验证太频繁");
+			}
+			//判断当天是否超过最大条数
+			else if(current_day.compareTo(last_item_day)==0 && last_po.getCount()>=PinUtil.max_num){
+				throw new HuiHuaException("当天验证次数已经超过上限");
+			}
+			//当天发送，小于限制条目
+			else if(current_day.compareTo(last_item_day)==0 && last_po.getCount()<PinUtil.max_num){
+				last_po.setLast_pin(pin);
+				last_po.setCount(last_po.getCount()+1);
+				last_po.setUpdatedOn(now);
+				pinmapper.updateByVersion(last_po);
+			}
+			//隔天发送
+			else if(current_day.compareTo(last_item_day)>0){
+				last_po.setLast_pin(pin);
+				last_po.setCount(1);
+				last_po.setCreatedOn(now);
+				last_po.setUpdatedOn(now);
+				pinmapper.updateByVersion(last_po);
+			}
+			//下发验证码
+			if("test".equals(PinUtil.modle)){
+			}
+			else{
+				SMSObject sms = new SMSObject();
+				sms.setSendto_url(PinUtil.sendto_url);
+				sms.setUid(PinUtil.uid);
+				sms.setSms_key(PinUtil.sms_key);
+				sms.setTarget_mobile(Long.toString(accountinfo.getMobile()));
+				sms.setSmsText(PinUtil.smsText+pin);
+				if(!PinUtil.sendPin(sms)){
+					throw new HuiHuaException("下发验证码失败");
+				}
+			}
+		}
+			else{
+			//生成随机验证码  n位，并下发
+			
+			if("test".equals(PinUtil.modle)){
+				pin = 111111L;
+			}
+			else{
+				SMSObject sms = new SMSObject();
+				sms.setSendto_url(PinUtil.sendto_url);
+				sms.setUid(PinUtil.uid);
+				sms.setSms_key(PinUtil.sms_key);
+				sms.setTarget_mobile(Long.toString(accountinfo.getMobile()));
+				sms.setSmsText(PinUtil.smsText+pin);
+				if(!PinUtil.sendPin(sms)){
+					throw new HuiHuaException("下发验证码失败");
+				}
+			}
+			//入库
+			po.setLast_pin(pin);
+			po.setCount(1);
+			po.setVersionOptimizedLock(0);
+			po.setCreatedOn(now);
+			po.setUpdatedOn(now);
+			pinmapper.insert(po);
+		}
+	}
+
+	@Override
+	public PinObject checkPIN(PinObject po)
+			throws HuiHuaException {
+		// TODO Auto-generated method stub
+		PinObject  last_po = pinmapper.getPinByPojo(po);
+		if(last_po!=null){
+			last_po.setCheckResult(true);
+		}else{
+			last_po.setCheckResult(false);
+		}
+		return last_po;
+	}
+
+	@Override
+	public boolean changeMobile(AccountInfo accountinfo, long pin)
+			throws HuiHuaException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean changePwd(AccountInfo accountinfo) throws HuiHuaException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public AccountInfo getAccountInfo(AccountInfo accountinfo) throws HuiHuaException {
+		AccountInfo acc = accountinfomapper.getAcByAc(accountinfo);
+		return acc;
+	}
+
+	@Override
+	public void bindMobile(AccountInfo accountinfo, PinObject pinobj)
+			throws HuiHuaException {
+		// TODO Auto-generated method stub
+		if(pinobj.getLast_pin()!=111){
+			throw new HuiHuaException("验证码错误");
+		}
+		try{
+			//查找并更新
+			AccountInfo ac = new AccountInfo();
+			ac.setAccountID(accountinfo.getAccountID());
+			ac = accountinfomapper.getAcByAc(ac);
+			accountinfo.setVersionOptimizedLock(ac.getVersionOptimizedLock());
+			int num = accountinfomapper.updateByVersion(accountinfo);
+			if(num==0){
+				throw new HuiHuaException("绑定手机失败，内如错误，请稍后再试");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new HuiHuaException("绑定手机失败，内如错误，请稍后再试");
+		}
+	}
+
+	@Override
+	public void changeMobile(AccountInfo accountinfo) throws HuiHuaException {
+		// TODO Auto-generated method stub
+		try{
+			//避免重复绑定
+			AccountInfo old_ac = new AccountInfo(); 
+			old_ac = accountinfomapper.getAcByAc(accountinfo);
+			if(old_ac!=null){
+				throw new HuiHuaException("输入的手机号已经存在，请更换!");
+			}
+			//查找并更新
+			AccountInfo ac = new AccountInfo();
+			ac.setAccountID(accountinfo.getAccountID());
+			ac = accountinfomapper.getAcByAc(ac);
+			accountinfo.setVersionOptimizedLock(ac.getVersionOptimizedLock());
+			int num = accountinfomapper.updateByVersion(accountinfo);
+			if(num==0){
+				throw new HuiHuaException("修改手机失败，内如错误，请稍后再试");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new HuiHuaException("修改手机失败，内如错误，请稍后再试");
+		}
+	}
+
+	@Override
+	public void pwdBack(AccountInfo accountinfo) throws HuiHuaException {
+		// TODO Auto-generated method stub
+		AccountInfo tmp = new AccountInfo();
+		tmp.setAccountID(accountinfo.getAccountID());
+		//获取
+		tmp = this.accountinfomapper.getAcByAc(tmp);
+		
+		accountinfo.setVersionOptimizedLock(tmp.getVersionOptimizedLock());
+		accountinfo.setLoginPwd(StrMD5.getInstance().encrypt(accountinfo.getLoginPwd(), tmp.getSalt()));
+		
+		try{
+			//更新
+			int num = this.accountinfomapper.updateByVersion(accountinfo);
+			if(num==0){
+				throw new HuiHuaException("修改密码错误，内部错误，请稍后再试");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new HuiHuaException("修改密码错误，内部错误，请稍后再试");
+		}
+		
+	}
+	
+
+	@Override
+	public void changePwdByPwd(AccountInfo accountinfo, String newpwd)
+			throws HuiHuaException {
+		// TODO Auto-generated method stub
+		AccountInfo tmp = new AccountInfo();
+		tmp.setAccountID(accountinfo.getAccountID());
+		tmp = accountinfomapper.getAcByAc(tmp);
+		String tmp_pwd = tmp.getLoginPwd();
+		String param_oldpwd = StrMD5.getInstance().encrypt(accountinfo.getLoginPwd(),tmp.getSalt());
+		if(!param_oldpwd.equals(tmp_pwd)){
+			throw new HuiHuaException("旧密码错误");
+		}
+		accountinfo.setLoginPwd(StrMD5.getInstance().encrypt(newpwd,tmp.getSalt()));
+		accountinfo.setVersionOptimizedLock(tmp.getVersionOptimizedLock());
+		accountinfo.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+		try{
+			int num = this.accountinfomapper.updateByVersion(accountinfo);
+			if(num==0){
+				throw new HuiHuaException("修改密码错误，内部错误，请稍后再试");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new HuiHuaException("修改密码错误，内部错误，请稍后再试");
+		}
+		
+
+	}
+
+	@Override
+	public void supplement(AccountInfo accountinfo) throws HuiHuaException {
+		// TODO Auto-generated method stub
+		
+		try{
+			AccountInfo tmp = new AccountInfo();
+			tmp.setAccountID(accountinfo.getAccountID());
+			tmp = accountinfomapper.getAcByAc(tmp);
+			if(tmp==null){
+				throw new HuiHuaException("用户不存在");
+			}
+			accountinfo.setVersionOptimizedLock(tmp.getVersionOptimizedLock());
+			accountinfo.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+			int num = this.accountinfomapper.updateByVersion(accountinfo);
+			if(num==0){
+				throw new HuiHuaException("修改密码错误，内部错误，请稍后再试");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new HuiHuaException("修改密码错误，内部错误，请稍后再试");
+		}
+	}
+
+	@Override
+	public boolean mobileIsExist(Long mobile) throws HuiHuaException {
+		// TODO Auto-generated method stub
+		AccountInfo tmp = new AccountInfo();
+		tmp.setMobile(mobile);
+		long  num = this.accountinfomapper.count(tmp);
+		if(num>0){
+			return true; 
+		}
+		return false;
+	}
+	
+	
+}

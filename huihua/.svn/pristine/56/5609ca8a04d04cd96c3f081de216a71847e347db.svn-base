@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+    <!-- 提供给焦点的后台接口 -->
+	<!-- 交易相关接口 -->
+	<!-- author jesse wang -->
+	<!-- since 2015-03-11 -->
+	
+	
+	<package name="test-package" extends="json-default" namespace="/api/test">
+	<!-- 查询账户信息记录 -->
+	    <action name="test" class="com.partner.huihua.action.test.TestAction" method="test">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	    <!-- 查询账户信息记录 -->
+	    <action name="getcount" class="com.partner.huihua.action.account.AccountAction" method="count">
+	        <result type="json">
+	            <param name="root">outText</param>
+	        </result>
+	    </action>
+	</package>
+	
+</struts>

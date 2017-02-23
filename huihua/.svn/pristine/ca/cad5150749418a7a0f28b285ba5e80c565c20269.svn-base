@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.partner.huihua.mapper.ProceedsInfoMapper">
+    <!--映射 -->
+	<resultMap id="ProceedsInfoMap" type="com.partner.huihua.bean.ProceedsInfo" >
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="ACCOUNT_ID" property="accountID" jdbcType="BIGINT" />
+		<result column="TYPE" property="proceesType" jdbcType="INTEGER" typeHandler="com.partner.huihua.utils.common.IntEnumHandler" />
+		<result column="ACCOUNT_AMT" property="accountAmt" jdbcType="NUMERIC" />
+		<result column="TODAY_PROCEEDS" property="todayProceeds" jdbcType="NUMERIC" />
+		<result column="ALL_PROCEEDS" property="allProceeds" jdbcType="NUMERIC" />
+		<result column="LAST_TIME" property="lastTime" jdbcType="NUMERIC" />
+		<result column="HOUR_COUNT" property="hourCount" jdbcType="NUMERIC" />
+		<result column="VERSION_OPTIMIZED_LOCK" property="versionOptimizedLock" jdbcType="INTEGER" />
+		<result column="CREATED_ON" property="createdOn" jdbcType="TIMESTAMP" />
+		<result column="UPDATED_ON" property="updatedOn" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	
+	<!-- 所有字段 -->
+	<sql id="Base_Column_List" >
+		ID,
+		ACCOUNT_ID,
+		TYPE,
+		TODAY_PROCEEDS,
+		ALL_PROCEEDS,
+		LAST_TIME,
+		HOUR_COUNT,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+	</sql>
+	
+	<!-- 一般查询条件 -->
+	<sql id="generic_where_clause">
+	    <where>
+	    	<![CDATA[ 1=1 ]]>
+	    	<!-- 账号 -->
+		    <if test="accountID != null">
+		        <![CDATA[ AND t.ACCOUNT_ID=#{accountID,jdbcType=BIGINT} ]]>
+		    </if>
+			<!-- 用户状态 -->
+			<if test="proceesType != null">
+			    <![CDATA[ AND t.TYPE=#{proceesType,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler}]]>
+			</if>
+		</where>
+	</sql>
+	
+	<sql id="account_where_clause">
+	    <where>
+	    	<![CDATA[ 1=1 ]]>
+	    	<!-- 账号 -->
+		    <if test="accountID != null">
+		        <![CDATA[ AND A.ACCOUNT_ID=#{accountID,jdbcType=BIGINT} ]]>
+		    </if>
+		</where>
+	</sql>
+	
+	
+	<insert id="insert" parameterType="com.partner.huihua.bean.ProceedsInfo">
+		insert into HH_PROCEEDS_INFO (
+		ACCOUNT_ID,
+		TYPE,
+		TODAY_PROCEEDS,
+		ALL_PROCEEDS,
+		LAST_TIME,
+		HOUR_COUNT,
+		VERSION_OPTIMIZED_LOCK,
+		CREATED_ON,
+		UPDATED_ON
+		) values
+		(
+		#{accountID,jdbcType=BIGINT},
+		#{proceesType,jdbcType=INTEGER,typeHandler=com.partner.huihua.utils.common.IntEnumHandler},
+		#{todayProceeds,jdbcType=NUMERIC},
+		#{allProceeds,jdbcType=NUMERIC},
+		#{lastTime,jdbcType=NUMERIC},
+		#{hourCount,jdbcType=NUMERIC},
+		#{versionOptimizedLock,jdbcType=INTEGER},
+		#{createdOn,jdbcType=TIMESTAMP},
+		#{updatedOn,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<select id="getObjByObj" resultMap="ProceedsInfoMap">
+	    select <include refid="Base_Column_List" />
+	    from HH_PROCEEDS_INFO t 
+	    <include refid="generic_where_clause" />
+	</select>
+	
+	<select id="getProceedsInfo" resultMap="ProceedsInfoMap">
+		 SELECT a.ACCOUNT_ID,A.ACCOUNT_AMT,IFNULL(B.TODAY_PROCEEDS,0.00) as TODAY_PROCEEDS,IFNULL(B.ALL_PROCEEDS,0.00) as ALL_PROCEEDS FROM 
+		hh_account_info A LEFT JOIN
+		(
+		SELECT
+			T.ACCOUNT_ID,
+			sum(t.TODAY_PROCEEDS) TODAY_PROCEEDS,
+			sum(t.ALL_PROCEEDS) ALL_PROCEEDS
+		FROM
+			HH_PROCEEDS_INFO t
+		  <include refid="generic_where_clause" />
+		) b  ON B.ACCOUNT_ID=A.ACCOUNT_ID
+		<include refid="account_where_clause" />
+	</select>
+	
+	<!-- 使用乐观锁更新一行数据 -->
+	<update id="updateByVersion" parameterType="com.partner.huihua.bean.ProceedsInfo">
+	    update HH_PROCEEDS_INFO t
+	    <set>
+	        <!-- 不用更新userName -->
+	        
+	        <if test="todayProceeds != null">
+	            TODAY_PROCEEDS=#{todayProceeds,jdbcType=NUMERIC},
+	        </if>
+	        <if test="allProceeds != null">
+	            ALL_PROCEEDS=#{allProceeds,jdbcType=NUMERIC},
+	        </if>
+	        <if test="lastTime != null">
+	            LAST_TIME=#{lastTime,jdbcType=NUMERIC},
+	        </if>
+	        <if test="hourCount != null">
+	            HOUR_COUNT=#{hourCount,jdbcType=NUMERIC},
+	        </if>
+	        <!-- 乐观锁值加1 -->
+	        <if test="versionOptimizedLock != null">
+	            version_optimized_lock=${versionOptimizedLock + 1},
+	        </if>
+	        <!-- 不用更新created_on -->
+	        <if test="updatedOn != null">
+	            updated_on=#{updatedOn,jdbcType=TIMESTAMP}
+	        </if>
+	    </set>
+	     <include refid="generic_where_clause" />
+	     and VERSION_OPTIMIZED_LOCK=#{versionOptimizedLock,jdbcType=INTEGER}
+	</update>
+	
+</mapper>
