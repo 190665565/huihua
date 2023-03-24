@@ -48,6 +48,8 @@ public class TestValidateCode {
 		testSendPin();
 //		System.out.println(DateUtil.TimestampToString(new Timestamp(System.currentTimeMillis()) , DateStyle.YYYY_MM_DD));
 
+		//update for copilot 20230324
+
 	}
 
 }
